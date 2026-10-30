@@ -1,0 +1,178 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import sys
+import math
+import numpy as np
+import time
+
+#ROS Imports
+import rospy
+from sensor_msgs.msg import LaserScan
+from ackermann_msgs.msg import AckermannDriveStamped, AckermannDrive
+from nav_msgs.msg import Odometry
+
+
+class WallFollow:
+    def __init__(self):
+
+        # Read the Wall-Following controller paramters form params.yaml
+        # ...
+	lidarscan_topic = rospy.get_param('~scan_topic')
+	odom_topic = rospy.get_param('~odom_topic')
+	drive_topic = rospy.get_param('~drive_topic')
+
+        self.center_offset = rospy.get_param('~CenterOffset')
+        self.distance_left = rospy.get_param('~DistanceLeft')
+        self.distance_right = rospy.get_param('~DistanceRight')
+        self.track_wall = rospy.get_param('~TrackWall')
+        self.angle_bl = rospy.get_param('~angle_bl')
+        self.angle_al = rospy.get_param('~angle_al')    
+        self.angle_br = rospy.get_param('~angle_br')
+        self.angle_ar = rospy.get_param('~angle_ar')
+        self.n_pts_l = rospy.get_param('~n_pts_l')
+        self.n_pts_r = rospy.get_param('~n_pts_r')
+        self.tau = rospy.get_param('~tau')
+        self.k_d = rospy.get_param('~k_d')
+        self.k_p = rospy.get_param('~k_p')
+        self.vehicle_velocity = rospy.get_param('~vehicle_velocity')
+        self.turn_velocity = rospy.get_param('~turn_velocity')
+        self.velocity_zero = rospy.get_param('~velocity_zero')
+
+	self.wheelbase = rospy.get_param('~wheelbase')
+	self.max_steering_angle = rospy.get_param('~max_steering_angle')
+
+	self.right_beam_angle = rospy.get_param('~right_beam_angle')
+	self.left_beam_angle = rospy.get_param('~left_beam_angle')
+
+	self.stop_distance = rospy.get_param('~stop_distance')
+
+	self.stop_distance_decay =rospy.get_param('~stop_distance_decay')
+
+	
+
+        # Subscrbie to LiDAR scan Wheel Odometry topics. This is to read the LiDAR scan data and vehicle actual velocity
+        rospy.Subscriber(lidarscan_topic, LaserScan, self.lidar_callback,queue_size=1)
+        rospy.Subscriber(odom_topic, Odometry, self.odom_callback,queue_size=1)
+
+        # Create a publisher for the Drive topic
+        self.drive_pub =rospy.Publisher(drive_topic, AckermannDriveStamped, queue_size=1)
+
+
+
+	self.steering = 0.0
+	self.vel = 0.0
+                
+     # The LiDAR callback function is where you read LiDAR scan data as it becomes availble and compute the vehile veloicty and steering angle commands
+    
+    def lidar_callback(self, data):      
+	      # Exttract the parameters of two walls on the left and right side of the vehicles. Referrring to Fig. 1 in the lab instructions, these are al, bl, thethal, ...
+
+        #all angles 
+        angle_ar = self.angle_ar
+        angle_al = self.angle_al
+	angle_br = self.angle_br
+        angle_bl = self.angle_bl
+        
+	#thetal and thetar
+        theta_r = angle_ar - angle_br
+        theta_l = angle_bl - angle_al
+	
+	
+	#computing distances for br, bl, ar, al through the indices
+        indices_br = int((angle_br)/ data.angle_increment)
+        br = data.ranges[indices_br]
+	         
+        indices_bl = int((angle_bl)/ data.angle_increment)
+
+        bl = data.ranges[indices_bl]
+	
+        indices_al = int((angle_al)/ data.angle_increment)
+        al = data.ranges[indices_al]
+	
+        indices_ar = int((angle_ar)/ data.angle_increment)
+        ar = data.ranges[indices_ar]
+	
+	print(angle_ar, angle_al, angle_br, angle_al)
+	print(data.angle_min)
+	print(data.angle_increment)
+
+	print(len(data.ranges))
+	print(indices_br, indices_bl, indices_al, indices_ar)
+
+
+	#numerator in beta_r
+	numerator_r = angle_ar * math.cos(theta_r) - angle_br
+	#denominator in beta_r
+	denominator_r = angle_ar * math.sin(theta_r)
+	#numerator in beta_l
+        numerator_l = angle_al * math.cos(theta_l) - angle_bl
+        #denominator in beta_l
+	denominator_l = angle_al * math.sin(theta_l)
+
+	#betal and betar
+	beta_r = math.atan(numerator_r/denominator_r)
+        beta_l = math.atan(numerator_l/denominator_l)
+
+	#distances of left and right wall
+	dr = angle_br*math.cos(beta_r)
+        dl = angle_bl*math.cos(beta_l)
+      # ...
+      # Compute the steering angle command to maintain the vehicle in the middle of left and and right walls
+      # ...  
+ 	
+	#alphal and alphar
+	alpha_r = beta_r + math.pi/2 -angle_br
+	alpha_l = -beta_l + 3*math.pi/2 - angle_bl  
+	
+	#if speed is greater than 0 because we cant have 0 denominator
+	if self.vel >= 0.01:
+		tilde = (dl-dr) - self.center_offset
+		dlr_dot = -self.vel*math.sin(alpha_l) - self.vel*math.sin(alpha_r)
+		
+		pd_controller = -self.k_p*tilde - self.k_d*dlr_dot
+
+		self.steering = math.atan( (pd_controller*(-self.wheelbase)) / ( (self.vel**2) * (math.cos(alpha_l) + math.cos(alpha_r)) ))
+		#if steering angle is greater than 0.41, then it gets set to 0.41
+		if self.steering > self.max_steering_angle:
+			self.steering = self.max_steering_angle
+
+# Find the closest obstacle point within a narrow viewing angle in front of the vehicle and compute the vehicle velocity command accordingly
+	
+	#finds closest distance point within left and right beam
+	#dob = min(data.ranges[self.left_beam_angle:self.right_beam_angle])
+
+	#exponential in formula
+	#e = -max((dob - self.stop_distance) / self.stop_distance_decay, 0)
+	#e = -max(dob-self.stop_distance,0/self.stop_distance_decay)
+
+	#nomial vel*(exp term)
+	#velocity = self.vehicle_velocity*(1-e)
+
+
+      # Publish steering angle and velocity commnads to the Drive topic
+      # ...
+
+	drive_msg = AckermannDriveStamped()
+	drive_msg.header.stamp = rospy.Time.now()
+	drive_msg.drive.steering_angle = self.steering
+	drive_msg.speed = velocity
+
+	self.drive_pub.publish(drive_msg)
+
+    # The Odometry callback reads the actual vehicle velocity from VESC. 
+
+    
+
+    def odom_callback(self, odom_msg):
+        # update current speed
+        self.vel = odom_msg.twist.twist.linear.x
+	
+
+def main(args):
+    rospy.init_node("WallFollow_node", anonymous=True)
+    wf = WallFollow()
+    rospy.sleep(0.1)
+    rospy.spin()
+
+if __name__=='__main__':
+	main(sys.argv)
