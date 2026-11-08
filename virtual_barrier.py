@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import print_function
+from __future__ import print_function 
 from lib2to3.pytree import Node
 from  numpy import array, dot
 from quadprog import solve_qp
