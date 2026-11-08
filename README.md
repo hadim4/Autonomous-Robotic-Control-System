@@ -1,3 +1,4 @@
+<img width="946" height="545" alt="macaev" src="https://github.com/user-attachments/assets/b5b6473e-17d9-47ed-9970-80759eb92216" />
 # Autonomous Robotic Control System
 
 **Jetson Nano | ROS | Python | C++ | LiDAR**
