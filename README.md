@@ -2,7 +2,7 @@
 
 **Jetson Nano | ROS | Python | C++ | LiDAR**
 
-Developed an autonomous robotic vehicle using ROS, LiDAR, and odometry for navigation and obstacle detection. The project uses sensor measurements and feedback control to follow walls, adjust steering and speed, and map the surrounding environment.
+Developed autonomous navigation and control algorithms for a Jetson Nano-based robotic vehicle using ROS, LiDAR, and IMU sensors. Implemented wall-following control, obstacle avoidance, and steering and speed regulation. Separately, developed a 2D occupancy grid mapping algorithm using LiDAR and wheel odometry to represent the surrounding environment.
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/b5b6473e-17d9-47ed-9970-80759eb92216" alt="MacAEV Autonomous Robotic Vehicle" width="650">
