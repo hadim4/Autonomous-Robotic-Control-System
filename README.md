@@ -1,9 +1,3 @@
-<p align="center">
-  <img 
-    src="https://github.com/user-attachments/assets/b5b6473e-17d9-47ed-9970-80759eb92216"
-    alt="MacAEV Autonomous Robotic Vehicle"
-    width="650"
-  />
 </p># Autonomous Robotic Control System
 
 **Jetson Nano | ROS | Python | C++ | LiDAR**
@@ -31,6 +25,13 @@ Developed an autonomous robotic vehicle using ROS, LiDAR, and odometry for navig
 - Used LiDAR distance measurements to identify obstacles in the vehicle's path.
 - Implemented speed adjustments based on the distance to nearby obstacles.
 - Explored virtual barrier-based navigation using LiDAR measurements and optimization methods.
+
+  <p align="center">
+  <img 
+    src="https://github.com/user-attachments/assets/b5b6473e-17d9-47ed-9970-80759eb92216"
+    alt="MacAEV Autonomous Robotic Vehicle"
+    width="650"
+  />
 
 ## Repository Structure
 
