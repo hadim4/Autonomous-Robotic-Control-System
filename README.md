@@ -18,12 +18,6 @@ Separately, developed a 2D occupancy grid mapping algorithm using LiDAR and whee
 ## Project Demonstration
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/c15bcdfb-f20f-4e93-a787-afc3cae70a14"
-       alt="Autonomous Robotic System Demonstration"
-       width="450">
-</p>
-
-<p align="center">
   <img src="https://github.com/alsoofin/Self-Driving-Car/blob/b12dec224be0168ad4fe2dc3bbe2263660754517/Self%20Driving%202.gif"
        alt="Autonomous Driving Demonstration 1"
        width="450">
