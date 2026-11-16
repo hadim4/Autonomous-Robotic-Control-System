@@ -14,6 +14,14 @@ Developed autonomous navigation and control algorithms for a Jetson Nano-based r
   <img src="https://github.com/user-attachments/assets/c15bcdfb-f20f-4e93-a787-afc3cae70a14" alt="Autonomous Robotic System Demonstration" width="330">
 </p>
 
+<p align="center">
+  <img src="https://github.com/alsoofin/Self-Driving-Car/blob/b12dec224be0168ad4fe2dc3bbe2263660754517/Self%20Driving%202.gif" width="50%">
+</p>
+
+<p align="center">
+  <img src="https://github.com/alsoofin/Self-Driving-Car/blob/b12dec224be0168ad4fe2dc3bbe2263660754517/Self%20Driving%201.gif" width="50%">
+</p>
+
 ## Key Features
 
 ### Autonomous Navigation & Wall Following
